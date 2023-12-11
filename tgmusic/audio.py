@@ -64,9 +64,7 @@ def download(url: str) -> str:
 
 async def play_song(chat_id, query):
     try:
-        # Check if the query is a valid YouTube URL
         if not validators.url(query):
-            # If not a URL, search for the query on YouTube
             results = YoutubeSearch(query, max_results=1).to_dict()
             if not results:
                 raise Exception("No results found on YouTube.")
@@ -80,11 +78,11 @@ async def play_song(chat_id, query):
 
         await userbot.send_message(
             chat_id,
-            f"🎵 **{title}**\n"
-            f"👀 Views: {views}\n"
-            f"⏳ Duration: {duration} minutes\n"
-            f"📢 Channel: {channel}\n"
-            f"🔗 [YouTube Link]({query})",
+            f"🎵 Title: `{title}`\n"
+            f"👀 Views: `{views}`\n"
+            f"⏳ Duration: `{duration}` minutes\n"
+            f"📢 Channel: `{channel}`\n"
+            f"🔗 Link: [YouTube Link]({query})",
         )
 
         file_path = download(query)
@@ -99,7 +97,7 @@ async def play_song(chat_id, query):
                     input_mode=InputMode.File,
                     path=raw_file,
                     parameters=AudioParameters(
-                        bitrate=88000,
+                        bitrate=48000,
                         channels=1
                     )
                 )
@@ -132,8 +130,6 @@ async def convert(file_path: str) -> str:
     out = path.basename(out)
     out_dir = "raw_files"
     out = path.join(out_dir, out)
-
-    # Create the raw_files directory if it doesn't exist
     os.makedirs(out_dir, exist_ok=True)
 
     if path.isfile(out):
