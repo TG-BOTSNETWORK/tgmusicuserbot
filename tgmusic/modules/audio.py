@@ -1,5 +1,5 @@
 from hydrogram import Client, filters
-from pytgcalls import PyTgCalls, GroupCallFactory
+from pytgcalls import PyTgCalls
 import asyncio
 from youtubesearchpython.__future__  import VideosSearch
 from pytgcalls.types.input_stream import AudioStream
@@ -36,8 +36,8 @@ async def play_song(chat_id, query):
     except Exception as e:
         print(f"Error adding audio stream: {e}")
 
-@userbot.on_message(filters.command("play"))
-async def play_command(client, message):
+@Client.on_message(filters.user(config.OWNER_ID) & filters.command("play"))
+async def play(client, message):
     chat_id = message.chat.id
     user_id = message.from_user.id
     query = " ".join(message.command[1:])
@@ -55,8 +55,8 @@ async def stop_call(chat_id):
         await group_call.leave()
         del active_calls[chat_id]
 
-@userbot.on_message(filters.command("stop"))
-async def stop_command(client, message):
+@Client.on_message(filters.user(config.OWNER_ID) & filters.command("stop"))
+async def stop(client, message):
     chat_id = message.chat.id
     await stop_call(chat_id)
     await userbot.send_message(chat_id, "🛑 Stopped playing and left the voice chat.")
