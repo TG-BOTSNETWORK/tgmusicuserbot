@@ -9,6 +9,7 @@ from tgmusic import pytgcalls, userbot
 from hydrogram import Client, filters
 from pytgcalls.types.input_stream import Stream
 from youtube_search import YoutubeSearch
+import validators
 
 class DurationLimitError(Exception):
     pass
