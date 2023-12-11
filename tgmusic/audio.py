@@ -1,17 +1,14 @@
-from os import path
-from pyrogram import Client, filters
-from pytgcalls import PyTgCalls
+import os
 import asyncio
+from os import path
 from pytgcalls.types.input_stream import AudioStream
 from yt_dlp import YoutubeDL
 from tgmusic import pytgcalls, userbot
-import os 
-import requests
 
 active_calls = {}
 queue = []
 
-DURATION_LIMIT = 60  
+DURATION_LIMIT = 60
 
 ydl_opts = {
     "format": "bestaudio/best",
@@ -38,28 +35,26 @@ def download(url: str) -> str:
 async def play_song(chat_id, query):
     try:
         url = download(query)
-        title = query
     except Exception as e:
         print(f"Error downloading song: {e}")
         await userbot.send_message(chat_id, "Error downloading song.")
         return
 
-    await userbot.send_message(chat_id, f"🔍 Searching for '{query}'. Please wait...")
-    await asyncio.sleep(2)  # Simulate searching (remove this line in a real scenario)
+    info = ydl.extract_info(url, download=False)
+    title = info.get("title", "Unknown Title")
+    views = info.get("view_count", "Unknown Views")
+    duration = round(info.get("duration", 0) / 60)
+    channel = info.get("uploader", "Unknown Channel")
 
-    thumb_url = f'https://i.ytimg.com/vi/{url.split("/")[-1].split("?")[0]}/maxresdefault.jpg'
-    
-    # Download the thumbnail locally
-    thumb_path = f"downloads/{title}.jpg"
-    try:
-        response = requests.get(thumb_url)
-        with open(thumb_path, 'wb') as f:
-            f.write(response.content)
-    except Exception as e:
-        print(f"Error downloading thumbnail: {e}")
-
-    await userbot.send_photo(chat_id, thumb_path,
-                             caption=f"🎵 **{title}**\n🔗 [YouTube Link](https://www.youtube.com/watch?v={url.split('/')[-1].split('?')[0]})")
+    await userbot.send_message(
+        chat_id,
+        f"🔍 Searching for '{query}'. Please wait...\n\n"
+        f"🎵 **{title}**\n"
+        f"👀 Views: {views}\n"
+        f"⏳ Duration: {duration} minutes\n"
+        f"📢 Channel: {channel}\n"
+        f"🔗 [YouTube Link](https://www.youtube.com/watch?v={info['id']})",
+    )
 
     group_call = pytgcalls.join_group_call(chat_id)
 
@@ -71,7 +66,7 @@ async def play_song(chat_id, query):
         group_call.add_audio_stream(audio_stream)
     except Exception as e:
         print(f"Error adding audio stream: {e}")
-        
+
 @userbot.on_message(filters.command("play"))
 async def play(client, message):
     chat_id = message.chat.id
