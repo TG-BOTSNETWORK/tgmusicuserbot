@@ -4,6 +4,7 @@ from os import path
 from pytgcalls.types.input_stream import AudioStream
 from yt_dlp import YoutubeDL
 from tgmusic import pytgcalls, userbot
+from pyrogram import Client, filters
 
 active_calls = {}
 queue = []
