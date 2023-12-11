@@ -2,7 +2,7 @@ pytgcalls
 pyrogram
 TgCrypto
 asyncio
-aiohttps
+aiohttp
 aiofiles
 hydrogram
 python-dotenv
