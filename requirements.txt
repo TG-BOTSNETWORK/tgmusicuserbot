@@ -1,4 +1,4 @@
-pytgcalls
+py-tgcalls
 pyrogram
 TgCrypto
 asyncio
