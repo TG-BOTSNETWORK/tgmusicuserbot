@@ -1,12 +1,12 @@
 from tgmusic import pytgcalls, userbot
-from pyrogram import idle
+from hydrogram import idle
 from pytgcalls import idle as tgidle
 
 if __name__ == "__main__":
    userbot.start()
-   print("UserBot Started")
+   print("[USER BOT STARTED] - IMPORTED ALL PLUGINS FROM TGMUSIC.")
    pytgcalls.start()
-   print("Vc Client Started")
+   print("[VOICE CHAT STARTED] - VOICE CHARTED STARTED!")
    tgidle()
    idle()
     
