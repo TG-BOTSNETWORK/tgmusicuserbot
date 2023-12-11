@@ -104,6 +104,3 @@ async def clear_queue(client, message):
     global queue
     queue = []
     await userbot.send_message(chat_id, "Queue cleared.")
-
-if __name__ == "__main__":
-    pytgcalls.run()
