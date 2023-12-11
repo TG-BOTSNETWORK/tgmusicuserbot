@@ -130,7 +130,11 @@ async def convert(file_path: str) -> str:
     out[-1] = "raw"
     out = ".".join(out)
     out = path.basename(out)
-    out = path.join("raw_files", out)
+    out_dir = "raw_files"
+    out = path.join(out_dir, out)
+
+    # Create the raw_files directory if it doesn't exist
+    os.makedirs(out_dir, exist_ok=True)
 
     if path.isfile(out):
         return out
@@ -151,4 +155,3 @@ async def convert(file_path: str) -> str:
         raise FFmpegReturnCodeError(f"Error during FFmpeg conversion: {e}")
 
     return out
-
