@@ -1,0 +1,7 @@
+pytgcalls
+ntgcalls
+pyrogram
+TgCrypto
+asyncio
+aiohttps
+aiofiles
