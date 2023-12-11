@@ -3,12 +3,7 @@ from pyrogram import Client
 from pytgcalls import PyTgCalls
 
 
-userbot = Client(
-    "tgmusic",
-    api_id=config.API_ID,
-    api_hash=config.API_HASH,
-    session_string=config.STRING,
-)
+userbot = Client(config.STRING, config.API_ID, config.API_HASH)
 pytgcalls = PyTgCalls(userbot)
 
 run = pytgcalls.start
