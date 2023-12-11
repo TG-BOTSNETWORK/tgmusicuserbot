@@ -5,3 +5,4 @@ TgCrypto
 asyncio
 aiohttps
 aiofiles
+hydrogram
