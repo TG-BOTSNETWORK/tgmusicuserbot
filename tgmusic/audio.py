@@ -1,26 +1,42 @@
+from os import path
 from pyrogram import Client, filters
 from pytgcalls import PyTgCalls
 import asyncio
-from youtubesearchpython.__future__ import VideosSearch
 from pytgcalls.types.input_stream import AudioStream
-import youtube_dl
+from yt_dlp import YoutubeDL
 from tgmusic import pytgcalls, userbot
 
 active_calls = {}
 queue = []
 
-async def download_song(query):
-    ydl_opts = {
-        'format': 'bestaudio/best',
-        'outtmpl': 'downloads/%(title)s.%(ext)s',
-    }
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        info_dict = ydl.extract_info(query, download=True)
-        return info_dict['title'], info_dict['url']
+DURATION_LIMIT = 60  
+
+ydl_opts = {
+    "format": "bestaudio/best",
+    "verbose": True,
+    "geo-bypass": True,
+    "nocheckcertificate": True,
+    "outtmpl": "downloads/%(id)s.%(ext)s",
+}
+
+ydl = YoutubeDL(ydl_opts)
+
+def download(url: str) -> str:
+    info = ydl.extract_info(url, False)
+    duration = round(info["duration"] / 60)
+
+    if duration > DURATION_LIMIT:
+        raise DurationLimitError(
+            f"❌ Videos longer than {DURATION_LIMIT} minute(s) aren't allowed, the provided video is {duration} minute(s)"
+        )
+
+    ydl.download([url])
+    return path.join("downloads", f"{info['id']}.{info['ext']}")
 
 async def play_song(chat_id, query):
     try:
-        title, url = await download_song(query)
+        url = await download(query)
+        title = query
     except Exception as e:
         print(f"Error downloading song: {e}")
         await userbot.send_message(chat_id, "Error downloading song.")
