@@ -1,5 +1,5 @@
 from config.config import config
-from hydrogram import Client
+from pyrogram import Client
 from pytgcalls import PyTgCalls
 
 
