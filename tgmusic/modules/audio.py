@@ -3,6 +3,7 @@ from pytgcalls import PyTgCalls, GroupCallFactory
 import asyncio
 from youtubesearchpython.__future__  import VideosSearch
 from pytgcalls.types.input_stream import AudioStream
+from tgmusic import pytgcalls, userbot
 
 active_calls = {}
 
