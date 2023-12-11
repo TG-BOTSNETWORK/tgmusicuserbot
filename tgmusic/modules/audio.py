@@ -36,7 +36,7 @@ async def play_song(chat_id, query):
     except Exception as e:
         print(f"Error adding audio stream: {e}")
 
-@Client.on_message(filters.user(config.OWNER_ID) & filters.command("play"))
+@Client.on_message(filters.command("play"))
 async def play(client, message):
     chat_id = message.chat.id
     user_id = message.from_user.id
@@ -44,10 +44,11 @@ async def play(client, message):
 
     if chat_id not in active_calls:
         active_calls[chat_id] = user_id
-        await userbot.send_message(chat_id, f"🔍 Searching for '{query}'. Please wait...")
+        await message.delete()
+        await message.reply_text("🔍")
         await play_song(chat_id, query)
     else:
-        await userbot.send_message(chat_id, "Bot is currently busy in another chat. Try again later.")
+        await message.reply_text(chat_id, "Bot is currently busy in another chat. Try again later.")
 
 async def stop_call(chat_id):
     if chat_id in active_calls:
@@ -55,7 +56,7 @@ async def stop_call(chat_id):
         await group_call.leave()
         del active_calls[chat_id]
 
-@Client.on_message(filters.user(config.OWNER_ID) & filters.command("stop"))
+@Client.on_message(filters.command("stop"))
 async def stop(client, message):
     chat_id = message.chat.id
     await stop_call(chat_id)
