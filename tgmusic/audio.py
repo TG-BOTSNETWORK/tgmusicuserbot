@@ -11,6 +11,24 @@ from pytgcalls.types.input_stream import Stream
 from youtube_search import YoutubeSearch
 import validators
 
+def transcode(filename):
+    ffmpeg.input(filename).output("input.raw", format='s16le', acodec='pcm_s16le', ac=2, ar='48k').overwrite_output().run() 
+    os.remove(filename)
+
+# Convert seconds to mm:ss
+def convert_seconds(seconds):
+    seconds = seconds % (24 * 3600)
+    seconds %= 3600
+    minutes = seconds // 60
+    seconds %= 60
+    return "%02d:%02d" % (minutes, seconds)
+
+
+# Convert hh:mm:ss to seconds
+def time_to_seconds(time):
+    stringt = str(time)
+    return sum(int(x) * 60 ** i for i, x in enumerate(reversed(stringt.split(':'))))
+    
 class DurationLimitError(Exception):
     pass
 
@@ -106,8 +124,6 @@ async def play(client, message):
     else:
         await userbot.send_message(chat_id, "Bot is currently busy in another chat. Try again later.")
 
-# Rest of your code...
-
 async def convert(file_path: str) -> str:
     out = path.basename(file_path)
     out = out.split(".")
@@ -119,15 +135,20 @@ async def convert(file_path: str) -> str:
     if path.isfile(out):
         return out
 
-    proc = await asyncio.create_subprocess_shell(
-        f"ffmpeg -y -i {file_path} -f s16le -ac 1 -ar 48000 -acodec pcm_s16le {out}",
-        asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE
-    )
+    try:
+        proc = await asyncio.create_subprocess_shell(
+            f"ffmpeg -y -i {file_path} -f s16le -ac 1 -ar 48000 -acodec pcm_s16le {out}",
+            asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
 
-    await proc.communicate()
+        _, stderr = await proc.communicate()
 
-    if proc.returncode != 0:
-        raise FFmpegReturnCodeError("FFmpeg did not return 0")
+        if proc.returncode != 0:
+            raise FFmpegReturnCodeError(f"FFmpeg error: {stderr.decode('utf-8')}")
+
+    except Exception as e:
+        raise FFmpegReturnCodeError(f"Error during FFmpeg conversion: {e}")
 
     return out
+
