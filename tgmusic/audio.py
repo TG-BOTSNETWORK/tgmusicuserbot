@@ -68,7 +68,7 @@ async def play_song(chat_id, query):
                 input_mode=InputMode.File,
                 path=file_path,
                 parameters=AudioParameters(
-                    bitrate=96000,
+                    bitrate=26000,
                     channels=2
                 )
             )
