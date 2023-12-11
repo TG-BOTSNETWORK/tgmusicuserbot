@@ -35,7 +35,7 @@ def download(url: str) -> str:
 
 async def play_song(chat_id, query):
     try:
-        url = await download(query)
+        url = download(query)
         title = query
     except Exception as e:
         print(f"Error downloading song: {e}")
