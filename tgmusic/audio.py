@@ -1,5 +1,6 @@
 import os
 import asyncio
+import ffmpeg
 from os import path
 from pytgcalls.types.input_stream import AudioStream, AudioParameters
 from ntgcalls import InputMode
@@ -7,6 +8,13 @@ from yt_dlp import YoutubeDL
 from tgmusic import pytgcalls, userbot
 from hydrogram import Client, filters
 from pytgcalls.types.input_stream import Stream
+from youtube_search import YoutubeSearch
+
+class DurationLimitError(Exception):
+    pass
+
+class FFmpegReturnCodeError(Exception):
+    pass
 
 active_calls = {}
 queue = []
@@ -37,43 +45,51 @@ def download(url: str) -> str:
 
 async def play_song(chat_id, query):
     try:
-        # Assume that the query is already a valid YouTube URL
-        url = query
-    except Exception as e:
-        print(f"Error downloading song: {e}")
-        await userbot.send_message(chat_id, "Error downloading song.")
-        return
+        # Check if the query is a valid YouTube URL
+        if not validators.url(query):
+            # If not a URL, search for the query on YouTube
+            results = YoutubeSearch(query, max_results=1).to_dict()
+            if not results:
+                raise Exception("No results found on YouTube.")
+            query = f"https://youtube.com{results[0]['url_suffix']}"
 
-    info = ydl.extract_info(url, download=False)
-    title = info.get("title", "Unknown Title")
-    views = info.get("view_count", "Unknown Views")
-    duration = round(info.get("duration", 0) / 60)
-    channel = info.get("uploader", "Unknown Channel")
+        info = ydl.extract_info(query, download=False)
+        title = info.get("title", "Unknown Title")
+        views = info.get("view_count", "Unknown Views")
+        duration = round(info.get("duration", 0) / 60)
+        channel = info.get("uploader", "Unknown Channel")
 
-    await userbot.send_message(
-        chat_id,
-        f"🎵 **{title}**\n"
-        f"👀 Views: {views}\n"
-        f"⏳ Duration: {duration} minutes\n"
-        f"📢 Channel: {channel}\n"
-        f"🔗 [YouTube Link]({url})",
-    )
+        await userbot.send_message(
+            chat_id,
+            f"🎵 **{title}**\n"
+            f"👀 Views: {views}\n"
+            f"⏳ Duration: {duration} minutes\n"
+            f"📢 Channel: {channel}\n"
+            f"🔗 [YouTube Link]({query})",
+        )
 
-    file_path = download(url)
+        file_path = download(query)
 
-    await pytgcalls.join_group_call(
-        chat_id,
-        Stream(
-            AudioStream(
-                input_mode=InputMode.File,
-                path=file_path,
-                parameters=AudioParameters(
-                    bitrate=128000,
-                    channels=3
+        # Convert the audio file
+        raw_file = await convert(file_path)
+
+        await pytgcalls.join_group_call(
+            chat_id,
+            Stream(
+                AudioStream(
+                    input_mode=InputMode.File,
+                    path=raw_file,
+                    parameters=AudioParameters(
+                        bitrate=48000,
+                        channels=1
+                    )
                 )
             )
         )
-    )
+
+    except Exception as e:
+        print(f"Error playing song: {e}")
+        await userbot.send_message(chat_id, f"Error playing song: {e}")
 
 @userbot.on_message(filters.command("play"))
 async def play(client, message):
@@ -89,48 +105,28 @@ async def play(client, message):
     else:
         await userbot.send_message(chat_id, "Bot is currently busy in another chat. Try again later.")
 
-async def stop_call(chat_id):
-    if chat_id in active_calls:
-        group_call = pytgcalls.get_group_call(chat_id)
-        await group_call.leave()
-        del active_calls[chat_id]
+# Rest of your code...
 
-@userbot.on_message(filters.command("stop"))
-async def stop(client, message):
-    chat_id = message.chat.id
-    await stop_call(chat_id)
-    await userbot.send_message(chat_id, "🛑 Stopped playing and left the voice chat.")
+async def convert(file_path: str) -> str:
+    out = path.basename(file_path)
+    out = out.split(".")
+    out[-1] = "raw"
+    out = ".".join(out)
+    out = path.basename(out)
+    out = path.join("raw_files", out)
 
-@userbot.on_message(filters.command("skip"))
-async def skip(client, message):
-    chat_id = message.chat.id
-    group_call = pytgcalls.get_group_call(chat_id)
-    group_call.skip()
+    if path.isfile(out):
+        return out
 
-@userbot.on_message(filters.command("pause"))
-async def pause(client, message):
-    chat_id = message.chat.id
-    group_call = pytgcalls.get_group_call(chat_id)
-    group_call.pause_playout()
+    proc = await asyncio.create_subprocess_shell(
+        f"ffmpeg -y -i {file_path} -f s16le -ac 1 -ar 48000 -acodec pcm_s16le {out}",
+        asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE
+    )
 
-@userbot.on_message(filters.command("resume"))
-async def resume(client, message):
-    chat_id = message.chat.id
-    group_call = pytgcalls.get_group_call(chat_id)
-    group_call.resume_playout()
+    await proc.communicate()
 
-@userbot.on_message(filters.command("queue"))
-async def show_queue(client, message):
-    chat_id = message.chat.id
-    if queue:
-        queue_str = "\n".join([f"{i + 1}. {entry}" for i, entry in enumerate(queue)])
-        await userbot.send_message(chat_id, f"**Queue:**\n{queue_str}")
-    else:
-        await userbot.send_message(chat_id, "Queue is empty.")
+    if proc.returncode != 0:
+        raise FFmpegReturnCodeError("FFmpeg did not return 0")
 
-@userbot.on_message(filters.command("clear"))
-async def clear_queue(client, message):
-    chat_id = message.chat.id
-    global queue
-    queue = []
-    await userbot.send_message(chat_id, "Queue cleared.")
+    return out
