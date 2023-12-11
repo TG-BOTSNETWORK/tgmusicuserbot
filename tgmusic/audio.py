@@ -1,10 +1,12 @@
 import os
 import asyncio
 from os import path
-from pytgcalls.types.input_stream import AudioStream
+from pytgcalls.types.input_stream import AudioStream, AudioParameters
+from ntgcalls import InputMode
 from yt_dlp import YoutubeDL
 from tgmusic import pytgcalls, userbot
 from pyrogram import Client, filters
+from pytgcalls.types.input_stream import Stream
 
 active_calls = {}
 queue = []
@@ -35,7 +37,8 @@ def download(url: str) -> str:
 
 async def play_song(chat_id, query):
     try:
-        url = download(query)
+        # Assume that the query is already a valid YouTube URL
+        url = query
     except Exception as e:
         print(f"Error downloading song: {e}")
         await userbot.send_message(chat_id, "Error downloading song.")
@@ -49,24 +52,28 @@ async def play_song(chat_id, query):
 
     await userbot.send_message(
         chat_id,
-        f"🔍 Searching for '{query}'. Please wait...\n\n"
         f"🎵 **{title}**\n"
         f"👀 Views: {views}\n"
         f"⏳ Duration: {duration} minutes\n"
         f"📢 Channel: {channel}\n"
-        f"🔗 [YouTube Link](https://www.youtube.com/watch?v={info['id']})",
+        f"🔗 [YouTube Link]({url})",
     )
 
-    group_call = pytgcalls.join_group_call(chat_id)
+    file_path = download(url)
 
-    try:
-        audio_stream = AudioStream(
-            f'https://www.youtube.com/watch?v={url.split("/")[-1].split("?")[0]}',
-            codec="opus",
+    await pytgcalls.join_group_call(
+        chat_id,
+        Stream(
+            AudioStream(
+                input_mode=InputMode.File,
+                path=file_path,
+                parameters=AudioParameters(
+                    bitrate=48000,
+                    channels=1
+                )
+            )
         )
-        group_call.add_audio_stream(audio_stream)
-    except Exception as e:
-        print(f"Error adding audio stream: {e}")
+    )
 
 @userbot.on_message(filters.command("play"))
 async def play(client, message):
