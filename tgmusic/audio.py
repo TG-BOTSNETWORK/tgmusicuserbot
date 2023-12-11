@@ -5,7 +5,7 @@ from pytgcalls.types.input_stream import AudioStream, AudioParameters
 from ntgcalls import InputMode
 from yt_dlp import YoutubeDL
 from tgmusic import pytgcalls, userbot
-from pyrogram import Client, filters
+from hydrogram import Client, filters
 from pytgcalls.types.input_stream import Stream
 
 active_calls = {}
@@ -68,8 +68,8 @@ async def play_song(chat_id, query):
                 input_mode=InputMode.File,
                 path=file_path,
                 parameters=AudioParameters(
-                    bitrate=48000,
-                    channels=1
+                    bitrate=96000,
+                    channels=2
                 )
             )
         )
