@@ -6,6 +6,7 @@ from pytgcalls.types.input_stream import AudioStream
 from yt_dlp import YoutubeDL
 from tgmusic import pytgcalls, userbot
 import os 
+import requests
 
 active_calls = {}
 queue = []
@@ -47,12 +48,13 @@ async def play_song(chat_id, query):
     await asyncio.sleep(2)  # Simulate searching (remove this line in a real scenario)
 
     thumb_url = f'https://i.ytimg.com/vi/{url.split("/")[-1].split("?")[0]}/maxresdefault.jpg'
-
-    thumb_path = f"downloads/{title}.jpg"
     
     # Download the thumbnail locally
+    thumb_path = f"downloads/{title}.jpg"
     try:
-        os.system(f"wget -O {thumb_path} {thumb_url}")
+        response = requests.get(thumb_url)
+        with open(thumb_path, 'wb') as f:
+            f.write(response.content)
     except Exception as e:
         print(f"Error downloading thumbnail: {e}")
 
@@ -69,7 +71,7 @@ async def play_song(chat_id, query):
         group_call.add_audio_stream(audio_stream)
     except Exception as e:
         print(f"Error adding audio stream: {e}")
-
+        
 @userbot.on_message(filters.command("play"))
 async def play(client, message):
     chat_id = message.chat.id
