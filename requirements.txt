@@ -1,5 +1,5 @@
 py-tgcalls
-pyrogram
+pyrogram==2.0.106
 TgCrypto
 asyncio
 aiohttp
