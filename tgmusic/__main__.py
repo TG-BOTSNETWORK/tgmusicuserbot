@@ -1,6 +1,6 @@
 from tgmusic import userbot
 from pyrogram import idle
-from tgmusic import run
+from tgmusic import pytgcalls
 
-run()
+pytgcalls.start()
 idle()
