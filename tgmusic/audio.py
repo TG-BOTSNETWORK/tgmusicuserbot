@@ -92,7 +92,7 @@ async def play_song(chat_id, user_id, query):
 
         file_path = download(query)
         raw_file = await convert(file_path)
-        if chat_id not in active_calls:
+       if chat_id not in active_calls:
             active_calls[chat_id] = user_id
             is_playing[chat_id] = True
             await pytgcalls.join_group_call(
@@ -108,12 +108,14 @@ async def play_song(chat_id, user_id, query):
                     )
                 )
             )
+            print(f"Joined group call for chat_id: {chat_id}")
         else:
             if chat_id not in queue:
                 queue[chat_id] = []  
             queue[chat_id].append(raw_file)
             if not is_playing[chat_id]:
                 await process_queue(chat_id)  # Start playing from the queue if not already playing
+                print(f"Processing queue for chat_id: {chat_id}")
             else:
                 await userbot.send_message(chat_id, f"🔄Title: `{title}` added to queue.")
 
