@@ -141,12 +141,12 @@ async def play(client, message):
     user_id = message.from_user.id
     query = " ".join(message.command[1:])
     if chat_id in active_calls:
-        await play_song(chat_id, user_id, query) 
+        await play_song(chat_id, query) 
     else:
         active_calls[chat_id] = user_id
         await message.delete()
         await message.reply_text("🔍")
-        await play_song(chat_id, user_id, query)
+        await play_song(chat_id, query)
 
 @userbot.on_message(filters.command("skip"))
 async def skip(client, message):
