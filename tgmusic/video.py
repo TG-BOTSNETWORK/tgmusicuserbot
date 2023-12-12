@@ -3,7 +3,7 @@ import os
 import asyncio
 import ffmpeg
 from os import path
-from pytgcalls.types.input_stream import AudioStream, AudioParameters
+from pytgcalls.types.input_stream import VideoStream, VideoParameters
 from ntgcalls import InputMode
 from yt_dlp import YoutubeDL
 from tgmusic import pytgcalls, userbot
@@ -77,10 +77,10 @@ async def play_song(chat_id, user_id, query, video_quality):
             await pytgcalls.join_group_call(
                 chat_id,
                 Stream(
-                    AudioStream(
+                    VideoStream(
                         input_mode=InputMode.File,
                         path=raw_file,
-                        parameters=AudioParameters(
+                        parameters=VideoParameters(
                             bitrate=48000,
                             channels=1
                         )
@@ -114,10 +114,10 @@ async def process_queue(chat_id):
             await pytgcalls.join_group_call(
                 chat_id,
                 Stream(
-                    AudioStream(
+                    VideoStream(
                         input_mode=InputMode.File,
                         path=raw_file,
-                        parameters=AudioParameters(
+                        parameters=VideoParameters(
                             bitrate=48000,
                             channels=1
                         )
