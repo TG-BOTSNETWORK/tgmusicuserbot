@@ -66,9 +66,7 @@ def download(url: str) -> str:
 
 async def play_song(chat_id, user_id, query):
     try:
-        # Check if the query is a valid YouTube URL
         if not validators.url(query):
-            # If not a URL, search for the query on YouTube
             results = YoutubeSearch(query, max_results=1).to_dict()
             if not results or not results[0].get('url_suffix') or not results[0].get('title'):
                 raise Exception("No valid results found on YouTube.")
@@ -80,7 +78,6 @@ async def play_song(chat_id, user_id, query):
         views = info.get("view_count", "Unknown Views")
         duration = round(info.get("duration", 0) / 60)
         channel = info.get("uploader", "Unknown Channel")
-
         await userbot.send_message(
             chat_id,
             f"**🎵Title:** `{title}`\n"
@@ -119,7 +116,6 @@ async def play_song(chat_id, user_id, query):
                 queue[chat_id] = [raw_file]  
                 await process_queue(chat_id)  
                 print(f"Processing queue for chat_id: {chat_id}")
-
     except DurationLimitError as de:
         print(f"Error playing song: {de}")
         await userbot.send_message(chat_id, str(de))
@@ -131,20 +127,28 @@ async def process_queue(chat_id):
     if chat_id in queue and len(queue[chat_id]) > 0:
         raw_file = queue[chat_id].pop(0)
         is_playing[chat_id] = True
-        await pytgcalls.join_group_call(
-            chat_id,
-            Stream(
-                AudioStream(
-                    input_mode=InputMode.File,
-                    path=raw_file,
-                    parameters=AudioParameters(
-                        bitrate=48000,
-                        channels=1
+        try:
+            await pytgcalls.join_group_call(
+                chat_id,
+                Stream(
+                    AudioStream(
+                        input_mode=InputMode.File,
+                        path=raw_file,
+                        parameters=AudioParameters(
+                            bitrate=48000,
+                            channels=1
+                        )
                     )
                 )
             )
-        )
-        await userbot.send_message(chat_id, "**▶️ Playing from queue.**")
+            await userbot.send_message(chat_id, "**▶️ Playing from queue.**")
+        except Exception as e:
+            print(f"Error joining group call: {e}")
+            await userbot.send_message(chat_id, f"Error: {e}")
+            # Reset is_playing and leave voice chat
+            is_playing[chat_id] = False
+            await pytgcalls.leave_group_call(chat_id)
+            await userbot.send_message(chat_id, "**🔇 Queue is empty. Leaving voice chat.**")
     else:
         is_playing[chat_id] = False
         await pytgcalls.leave_group_call(chat_id)
