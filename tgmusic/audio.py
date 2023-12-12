@@ -92,7 +92,7 @@ async def play_song(chat_id, user_id, query):
 
         file_path = download(query)
         raw_file = await convert(file_path)
-       if chat_id not in active_calls:
+        if chat_id not in active_calls:
             active_calls[chat_id] = user_id
             is_playing[chat_id] = True
             await pytgcalls.join_group_call(
