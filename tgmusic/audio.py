@@ -88,34 +88,34 @@ async def play_song(chat_id, query):
             f"📢 Channel: `{channel}`\n"
         )
 
-       file_path = download(query)
-       raw_file = await convert(file_path)
-       if chat_id not in active_calls:
-          active_calls[chat_id] = user_id
-          await pytgcalls.join_group_call(
-              chat_id,
-              Stream(
-                 AudioStream(
-                     input_mode=InputMode.File,
-                     path=raw_file,
-                     parameters=AudioParameters(
-                          bitrate=48000,
-                          channels=1
-                     )
+        file_path = download(query)
+        raw_file = await convert(file_path)
+        if chat_id not in active_calls:
+            active_calls[chat_id] = user_id
+            await pytgcalls.join_group_call(
+                chat_id,
+                Stream(
+                    AudioStream(
+                        input_mode=InputMode.File,
+                        path=raw_file,
+                        parameters=AudioParameters(
+                            bitrate=48000,
+                            channels=1
+                        )
+                    )
                 )
             )
-         )
-     else:
-         if chat_id not in queue:
-            queue[chat_id] = []  
-        queue[chat_id].append(raw_file)
-        await userbot.send_message(chat_id, f"🔄Title: `{title}` added to queue.")
-except DurationLimitError as de:
-     print(f"Error playing song: {de}")
-     await userbot.send_message(chat_id, str(de))
- except Exception as e:
-     print(f"Error playing song: {e}")
-     await userbot.send_message(chat_id, f"Song not found: {e}")
+        else:
+            if chat_id not in queue:
+                queue[chat_id] = []  
+            queue[chat_id].append(raw_file)
+            await userbot.send_message(chat_id, f"🔄Title: `{title}` added to queue.")
+    except DurationLimitError as de:
+        print(f"Error playing song: {de}")
+        await userbot.send_message(chat_id, str(de))
+    except Exception as e:
+        print(f"Error playing song: {e}")
+        await userbot.send_message(chat_id, f"Song not found: {e}")
 
 async def process_queue(chat_id):
     if chat_id in queue and len(queue[chat_id]) > 0:
