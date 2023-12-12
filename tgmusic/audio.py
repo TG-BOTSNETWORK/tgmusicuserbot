@@ -11,6 +11,8 @@ from pytgcalls.types.input_stream import Stream
 from youtube_search import YoutubeSearch
 import validators
 
+queue = {}
+
 def transcode(filename):
     ffmpeg.input(filename).output("input.raw", format='s16le', acodec='pcm_s16le', ac=2, ar='48k').overwrite_output().run() 
     os.remove(filename)
@@ -64,7 +66,9 @@ def download(url: str) -> str:
 
 async def play_song(chat_id, query):
     try:
+        # Check if the query is a valid YouTube URL
         if not validators.url(query):
+            # If not a URL, search for the query on YouTube
             results = YoutubeSearch(query, max_results=1).to_dict()
             if not results:
                 raise Exception("No results found on YouTube.")
@@ -78,18 +82,44 @@ async def play_song(chat_id, query):
 
         await userbot.send_message(
             chat_id,
-            f"🎵 Title: `{title}`\n"
+            f"🎵Title: `{title}`\n"
             f"👀 Views: `{views}`\n"
             f"⏳ Duration: `{duration}` minutes\n"
             f"📢 Channel: `{channel}`\n"
-            f"🔗 Link: [YouTube Link]({query})",
         )
 
         file_path = download(query)
-
-        # Convert the audio file
         raw_file = await convert(file_path)
+        if chat_id not in active_calls:
+            active_calls[chat_id] = user_id
+            await pytgcalls.join_group_call(
+                chat_id,
+                Stream(
+                    AudioStream(
+                        input_mode=InputMode.File,
+                        path=raw_file,
+                        parameters=AudioParameters(
+                            bitrate=48000,
+                            channels=1
+                        )
+                    )
+                )
+            )
+        else:
+            if chat_id not in queue:
+                queue[chat_id] = []
+            queue[chat_id].append(raw_file)
+            await userbot.send_message(chat_id, f"🔄Title: `{title}` added to queue.")
+    except DurationLimitError as de:
+        print(f"Error playing song: {de}")
+        await userbot.send_message(chat_id, str(de))
+    except Exception as e:
+        print(f"Error playing song: {e}")
+        await userbot.send_message(chat_id, f"Song not found: {e}")
 
+async def process_queue(chat_id):
+    if chat_id in queue and len(queue[chat_id]) > 0:
+        raw_file = queue[chat_id].pop(0)
         await pytgcalls.join_group_call(
             chat_id,
             Stream(
@@ -103,25 +133,27 @@ async def play_song(chat_id, query):
                 )
             )
         )
-
-    except Exception as e:
-        print(f"Error playing song: {e}")
-        await userbot.send_message(chat_id, f"Error playing song: {e}")
+        await userbot.send_message(chat_id, "▶️ Playing from queue.")
 
 @userbot.on_message(filters.command("play"))
 async def play(client, message):
     chat_id = message.chat.id
     user_id = message.from_user.id
     query = " ".join(message.command[1:])
-
-    if chat_id not in active_calls:
+    if chat_id in active_calls:
+        await play_song(chat_id, query)
+    else:
+        # If not, join the voice chat and play the song
         active_calls[chat_id] = user_id
         await message.delete()
         await message.reply_text("🔍")
         await play_song(chat_id, query)
-    else:
-        await userbot.send_message(chat_id, "Bot is currently busy in another chat. Try again later.")
 
+@userbot.on_message(filters.command("skip"))
+async def skip(client, message):
+    chat_id = message.chat.id
+    await pytgcalls.leave_group_call(chat_id)
+    await process_queue(chat_id)
 async def convert(file_path: str) -> str:
     out = path.basename(file_path)
     out = out.split(".")
