@@ -144,7 +144,11 @@ async def process_queue(chat_id):
                 )
             )
         )
-        await process_queue(chat_id)
+        await userbot.send_message(chat_id, "**▶️ Playing from queue.**")
+    else:
+        is_playing[chat_id] = False
+        await pytgcalls.leave_group_call(chat_id)
+        await userbot.send_message(chat_id, "**🔇 Queue is empty. Leaving voice chat.**")
 
 async def convert(file_path: str) -> str:
     out = path.basename(file_path)
@@ -194,5 +198,11 @@ async def play(client, message):
 async def skip(client, message):
     chat_id = message.chat.id
     await pytgcalls.leave_group_call(chat_id)
-    # Clear the queue when skipping
-    queue[chat_id] = []
+    await process_queue(chat_id)  
+    await message.reply_text("Song was skipped")
+
+@userbot.on_message(filters.command("end"))
+async def end(client, message):
+    chat_id = message.chat.id
+    await pytgcalls.leave_group_call(chat_id)
+    await message.reply_text("Music ended!")
