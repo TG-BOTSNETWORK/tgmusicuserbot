@@ -144,8 +144,6 @@ async def process_queue(chat_id):
                 )
             )
         )
-        await userbot.send_message(chat_id, "▶️ Playing from queue.")
-        # Recursive call to play the next song in the queue
         await process_queue(chat_id)
 
 @userbot.on_message(filters.command("play"))
