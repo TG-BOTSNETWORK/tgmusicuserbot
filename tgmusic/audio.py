@@ -29,12 +29,11 @@ def convert_seconds(seconds):
     seconds %= 60
     return "%02d:%02d" % (minutes, seconds)
 
-
 # Convert hh:mm:ss to seconds
 def time_to_seconds(time):
     stringt = str(time)
     return sum(int(x) * 60 ** i for i, x in enumerate(reversed(stringt.split(':'))))
-    
+
 class DurationLimitError(Exception):
     pass
 
@@ -113,7 +112,7 @@ async def play_song(chat_id, user_id, query):
             if chat_id not in queue:
                 queue[chat_id] = []  
             queue[chat_id].append(raw_file)
-            if not is_playing[chat_id]:
+            if not is_playing.get(chat_id, False):
                 await process_queue(chat_id)  # Start playing from the queue if not already playing
                 print(f"Processing queue for chat_id: {chat_id}")
             else:
