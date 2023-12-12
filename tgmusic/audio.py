@@ -11,6 +11,7 @@ from youtube_search import YoutubeSearch
 import validators
 from typing import Dict
 from asyncio import Queue, QueueEmpty as Empty
+from hydrogram import Client, filters
 
 queue: Dict[int, Queue] = {}
 active_calls = {}
