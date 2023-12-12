@@ -83,10 +83,10 @@ async def play_song(chat_id, user_id, query):
 
         await userbot.send_message(
             chat_id,
-            f"🎵Title: `{title}`\n"
-            f"👀 Views: `{views}`\n"
-            f"⏳ Duration: `{duration}` minutes\n"
-            f"📢 Channel: `{channel}`\n"
+            f"**🎵Title:** `{title}`\n"
+            f"**👀 Views:** `{views}`\n"
+            f"**⏳ Duration:** `{duration}` minutes\n"
+            f"**📢 Channel:** `{channel}`\n"
         )
 
         file_path = download(query)
@@ -114,7 +114,7 @@ async def play_song(chat_id, user_id, query):
 
             if is_playing.get(chat_id, False):
                 queue[chat_id].append(raw_file)
-                await userbot.send_message(chat_id, f"🔄Title: `{title}` added to queue.")
+                await userbot.send_message(chat_id, f"**🔄Title:** `{title}` added to queue.")
             else:
                 queue[chat_id] = [raw_file]  
                 await process_queue(chat_id)  
@@ -145,6 +145,37 @@ async def process_queue(chat_id):
             )
         )
         await process_queue(chat_id)
+
+async def convert(file_path: str) -> str:
+    out = path.basename(file_path)
+    out = out.split(".")
+    out[-1] = "raw"
+    out = ".".join(out)
+    out = path.basename(out)
+    out_dir = "raw_files"
+    out = path.join(out_dir, out)
+    os.makedirs(out_dir, exist_ok=True)
+
+    if path.isfile(out):
+        return out
+
+    try:
+        proc = await asyncio.create_subprocess_shell(
+            f"ffmpeg -y -i {file_path} -f s16le -ac 1 -ar 48000 -acodec pcm_s16le {out}",
+            asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+
+        _, stderr = await proc.communicate()
+
+        if proc.returncode != 0:
+            raise FFmpegReturnCodeError(f"FFmpeg error: {stderr.decode('utf-8')}")
+
+    except Exception as e:
+        raise FFmpegReturnCodeError(f"Error during FFmpeg conversion: {e}")
+
+    return out
+
 
 @userbot.on_message(filters.command("play"))
 async def play(client, message):
