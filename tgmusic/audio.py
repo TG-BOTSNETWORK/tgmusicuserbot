@@ -70,8 +70,9 @@ async def play_song(chat_id, user_id, query):
         if not validators.url(query):
             # If not a URL, search for the query on YouTube
             results = YoutubeSearch(query, max_results=1).to_dict()
-            if not results:
+            if not results or not results[0]['url_suffix']:
                 raise Exception("No results found on YouTube.")
+
             query = f"https://youtube.com{results[0]['url_suffix']}"
 
         info = ydl.extract_info(query, download=False)
