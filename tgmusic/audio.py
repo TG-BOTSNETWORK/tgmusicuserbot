@@ -111,12 +111,14 @@ async def play_song(chat_id, user_id, query):
         else:
             if chat_id not in queue:
                 queue[chat_id] = []  
-            queue[chat_id].append(raw_file)
-            if not is_playing.get(chat_id, False):
-                await process_queue(chat_id)  # Start playing from the queue if not already playing
-                print(f"Processing queue for chat_id: {chat_id}")
-            else:
+
+            if is_playing.get(chat_id, False):
+                queue[chat_id].append(raw_file)
                 await userbot.send_message(chat_id, f"🔄Title: `{title}` added to queue.")
+            else:
+                queue[chat_id] = [raw_file]  
+                await process_queue(chat_id)  
+                print(f"Processing queue for chat_id: {chat_id}")
 
     except DurationLimitError as de:
         print(f"Error playing song: {de}")
