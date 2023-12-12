@@ -6,7 +6,6 @@ from pytgcalls.types.input_stream import AudioStream, AudioParameters
 from ntgcalls import InputMode
 from yt_dlp import YoutubeDL
 from tgmusic import pytgcalls, userbot
-from hydrogram import Client, filters
 from pytgcalls.types.input_stream import Stream
 from youtube_search import YoutubeSearch
 import validators
@@ -14,6 +13,8 @@ from typing import Dict
 from asyncio import Queue, QueueEmpty as Empty
 
 queue: Dict[int, Queue] = {}
+active_calls = {}
+is_playing = {}
 
 def transcode(filename):
     ffmpeg.input(filename).output("input.raw", format='s16le', acodec='pcm_s16le', ac=2, ar='48k').overwrite_output().run() 
@@ -38,8 +39,6 @@ class DurationLimitError(Exception):
 
 class FFmpegReturnCodeError(Exception):
     pass
-
-active_calls = {}
 
 DURATION_LIMIT = 60
 
@@ -94,6 +93,7 @@ async def play_song(chat_id, user_id, query):
         raw_file = await convert(file_path)
         if chat_id not in active_calls:
             active_calls[chat_id] = user_id
+            is_playing[chat_id] = True
             await pytgcalls.join_group_call(
                 chat_id,
                 Stream(
@@ -111,7 +111,7 @@ async def play_song(chat_id, user_id, query):
             if chat_id not in queue:
                 queue[chat_id] = []  
             queue[chat_id].append(raw_file)
-            if not pytgcalls.is_connected(chat_id):
+            if not is_playing[chat_id]:
                 await process_queue(chat_id)  # Start playing from the queue if not already playing
             else:
                 await userbot.send_message(chat_id, f"🔄Title: `{title}` added to queue.")
@@ -126,6 +126,7 @@ async def play_song(chat_id, user_id, query):
 async def process_queue(chat_id):
     if chat_id in queue and len(queue[chat_id]) > 0:
         raw_file = queue[chat_id].pop(0)
+        is_playing[chat_id] = True
         await pytgcalls.join_group_call(
             chat_id,
             Stream(
