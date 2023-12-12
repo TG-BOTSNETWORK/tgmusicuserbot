@@ -153,6 +153,7 @@ async def skip(client, message):
     chat_id = message.chat.id
     await pytgcalls.leave_group_call(chat_id)
     await process_queue(chat_id)
+
 async def convert(file_path: str) -> str:
     out = path.basename(file_path)
     out = out.split(".")
