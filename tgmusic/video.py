@@ -83,8 +83,7 @@ async def play_song(chat_id, user_id, query, video_quality):
                         parameters=VideoParameters(
                             width=640,
                             height=360,
-                            frame_rate=20,
-                            bitrate=800_000
+                            frame_rate=20
                         )
                     )
                 )
@@ -122,8 +121,7 @@ async def process_queue(chat_id):
                         parameters=VideoParameters(
                              width=640,
                              height=360,
-                             frame_rate=20,
-                             bitrate=800_000 
+                             frame_rate=20 
                         )
                     )
                 )
