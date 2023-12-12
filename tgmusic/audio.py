@@ -111,7 +111,11 @@ async def play_song(chat_id, user_id, query):
             if chat_id not in queue:
                 queue[chat_id] = []  
             queue[chat_id].append(raw_file)
-            await userbot.send_message(chat_id, f"🔄Title: `{title}` added to queue.")
+            if not pytgcalls.is_connected(chat_id):
+                await process_queue(chat_id)  # Start playing from the queue if not already playing
+            else:
+                await userbot.send_message(chat_id, f"🔄Title: `{title}` added to queue.")
+
     except DurationLimitError as de:
         print(f"Error playing song: {de}")
         await userbot.send_message(chat_id, str(de))
