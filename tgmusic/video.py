@@ -81,8 +81,9 @@ async def play_song(chat_id, user_id, query, video_quality):
                         input_mode=InputMode.File,
                         path=raw_file,
                         parameters=VideoParameters(
-                            bitrate=48000,
-                            channels=1
+                            width=640,
+                            height=360,
+                            frame_rate=20
                         )
                     )
                 )
@@ -118,8 +119,9 @@ async def process_queue(chat_id):
                         input_mode=InputMode.File,
                         path=raw_file,
                         parameters=VideoParameters(
-                            bitrate=48000,
-                            channels=1
+                             width=640,
+                             height=360,
+                             frame_rate=20
                         )
                     )
                 )
