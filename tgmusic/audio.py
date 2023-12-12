@@ -10,8 +10,10 @@ from hydrogram import Client, filters
 from pytgcalls.types.input_stream import Stream
 from youtube_search import YoutubeSearch
 import validators
+from typing import Dict
+from asyncio import Queue, QueueEmpty as Empty
 
-queue = {}
+queue: Dict[int, Queue] = {}
 
 def transcode(filename):
     ffmpeg.input(filename).output("input.raw", format='s16le', acodec='pcm_s16le', ac=2, ar='48k').overwrite_output().run() 
@@ -38,7 +40,6 @@ class FFmpegReturnCodeError(Exception):
     pass
 
 active_calls = {}
-queue = []
 
 DURATION_LIMIT = 60
 
@@ -117,7 +118,6 @@ async def play_song(chat_id, user_id, query):
     except Exception as e:
         print(f"Error playing song: {e}")
         await userbot.send_message(chat_id, f"Error: {e}")
-
 
 async def process_queue(chat_id):
     if chat_id in queue and len(queue[chat_id]) > 0:
