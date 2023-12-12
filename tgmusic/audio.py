@@ -70,7 +70,7 @@ async def play_song(chat_id, user_id, query):
         if not validators.url(query):
             # If not a URL, search for the query on YouTube
             results = YoutubeSearch(query, max_results=1).to_dict()
-            if not results or not results[0]['url_suffix']:
+            if not results or not results[0].get('url_suffix'):
                 raise Exception("No results found on YouTube.")
 
             query = f"https://youtube.com{results[0]['url_suffix']}"
@@ -114,9 +114,13 @@ async def play_song(chat_id, user_id, query):
     except DurationLimitError as de:
         print(f"Error playing song: {de}")
         await userbot.send_message(chat_id, str(de))
+    except IndexError:
+        print("Index error occurred. Skipping song.")
+        await userbot.send_message(chat_id, "Error: Unable to get song details. Skipping.")
     except Exception as e:
         print(f"Error playing song: {e}")
-        await userbot.send_message(chat_id, f"Song not found: {e}")
+        await userbot.send_message(chat_id, f"Error: {e}")
+
 
 async def process_queue(chat_id):
     if chat_id in queue and len(queue[chat_id]) > 0:
