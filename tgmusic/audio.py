@@ -111,7 +111,7 @@ async def play_song(chat_id, user_id, query):
 
             if is_playing.get(chat_id, False):
                 queue[chat_id].append(raw_file)
-                await userbot.send_message(chat_id, f"**🔄Title:** `{title}` added to queue.")
+                await userbot.send_message(chat_id, f"**ADDED TO QUEUE JUST /skip to play**")
             else:
                 queue[chat_id] = [raw_file]  
                 await process_queue(chat_id)  
@@ -201,9 +201,14 @@ async def play(client, message):
 @userbot.on_message(filters.command("skip"))
 async def skip(client, message):
     chat_id = message.chat.id
-    await pytgcalls.leave_group_call(chat_id)
-    await process_queue(chat_id)  
-    await message.reply_text("Song was skipped")
+    if chat_id in queue and len(queue[chat_id]) > 0:
+        await pytgcalls.leave_group_call(chat_id)
+        await process_queue(chat_id)
+        await message.reply_text("Skipped to the next song in the queue.")
+    else:
+        await message.reply_text("No queue found. Leaving voice chat.")
+        await pytgcalls.leave_group_call(chat_id)
+
 
 @userbot.on_message(filters.command("end"))
 async def end(client, message):
