@@ -145,6 +145,8 @@ async def process_queue(chat_id):
             )
         )
         await userbot.send_message(chat_id, "▶️ Playing from queue.")
+        # Recursive call to play the next song in the queue
+        await process_queue(chat_id)
 
 @userbot.on_message(filters.command("play"))
 async def play(client, message):
@@ -163,34 +165,5 @@ async def play(client, message):
 async def skip(client, message):
     chat_id = message.chat.id
     await pytgcalls.leave_group_call(chat_id)
-    await process_queue(chat_id)
-
-async def convert(file_path: str) -> str:
-    out = path.basename(file_path)
-    out = out.split(".")
-    out[-1] = "raw"
-    out = ".".join(out)
-    out = path.basename(out)
-    out_dir = "raw_files"
-    out = path.join(out_dir, out)
-    os.makedirs(out_dir, exist_ok=True)
-
-    if path.isfile(out):
-        return out
-
-    try:
-        proc = await asyncio.create_subprocess_shell(
-            f"ffmpeg -y -i {file_path} -f s16le -ac 1 -ar 48000 -acodec pcm_s16le {out}",
-            asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-
-        _, stderr = await proc.communicate()
-
-        if proc.returncode != 0:
-            raise FFmpegReturnCodeError(f"FFmpeg error: {stderr.decode('utf-8')}")
-
-    except Exception as e:
-        raise FFmpegReturnCodeError(f"Error during FFmpeg conversion: {e}")
-
-    return out
+    # Clear the queue when skipping
+    queue[chat_id] = []
