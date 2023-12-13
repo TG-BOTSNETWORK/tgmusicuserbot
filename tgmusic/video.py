@@ -80,9 +80,9 @@ async def play_song(chat_id, user_id, query, video_quality):
                         input_mode=InputMode.File,
                         path=raw_file,
                         parameters=VideoParameters(
-                            width=640,
-                            height=360,
-                            frame_rate=20
+                            width=1280,
+                            height=720,
+                            frame_rate=30
                         )
                     )
                 )
@@ -153,7 +153,7 @@ async def convert(file_path: str) -> str:
 
     try:
         proc = await asyncio.create_subprocess_shell(
-            f"ffmpeg -y -i {file_path} -f s16le -ac 1 -ar 48000 -acodec pcm_s16le {out}",
+            f"ffmpeg -y -i {file_path} -vf scale=1280:720 -c:v libx264 -b:v 2M -c:a aac -b:a 192k -ar 48000 {out}",
             asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
