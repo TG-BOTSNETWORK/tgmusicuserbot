@@ -1,4 +1,3 @@
-# Import necessary libraries and modules
 import os
 import asyncio
 import ffmpeg
@@ -77,7 +76,7 @@ async def play_song(chat_id, user_id, query, video_quality):
             await pytgcalls.join_group_call(
                 chat_id,
                 Stream(
-                    VideoStream(
+                    stream_video=VideoStream(
                         input_mode=InputMode.File,
                         path=raw_file,
                         parameters=VideoParameters(
@@ -115,7 +114,7 @@ async def process_queue(chat_id):
             await pytgcalls.join_group_call(
                 chat_id,
                 Stream(
-                    VideoStream(
+                    stream_video=VideoStream(
                         input_mode=InputMode.File,
                         path=raw_file,
                         parameters=VideoParameters(
@@ -200,4 +199,3 @@ async def vend(client, message):
     chat_id = message.chat.id
     await pytgcalls.leave_group_call(chat_id)
     await message.reply_text("Video playback ended!")
-
