@@ -69,7 +69,7 @@ async def play_song(chat_id, user_id, query, video_quality):
         )
 
         file_path = download(query)
-        raw_file = await convert(file_path)
+        mkv_file = await convert(file_path)
         if chat_id not in active_calls:
             active_calls[chat_id] = user_id
             is_playing[chat_id] = True
@@ -78,7 +78,7 @@ async def play_song(chat_id, user_id, query, video_quality):
                 Stream(
                     stream_video=VideoStream(
                         input_mode=InputMode.File,
-                        path=raw_file,
+                        path=mkv_file,
                         parameters=VideoParameters(
                             width=1280,
                             height=720,
@@ -93,10 +93,10 @@ async def play_song(chat_id, user_id, query, video_quality):
                 queue[chat_id] = []  
 
             if is_playing.get(chat_id, False):
-                queue[chat_id].append(raw_file)
+                queue[chat_id].append(mkv_file)
                 await userbot.send_message(chat_id, f"**ADDED TO QUEUE JUST /skip to play**")
             else:
-                queue[chat_id] = [raw_file]  
+                queue[chat_id] = [mkv_file]  
                 await process_queue(chat_id)  
                 print(f"Processing queue for chat_id: {chat_id}")
     except DurationLimitError as de:
@@ -108,7 +108,7 @@ async def play_song(chat_id, user_id, query, video_quality):
 
 async def process_queue(chat_id):
     if chat_id in queue and len(queue[chat_id]) > 0:
-        raw_file = queue[chat_id].pop(0)
+        mkv_file = queue[chat_id].pop(0)
         is_playing[chat_id] = True
         try:
             await pytgcalls.join_group_call(
@@ -116,7 +116,7 @@ async def process_queue(chat_id):
                 Stream(
                     stream_video=VideoStream(
                         input_mode=InputMode.File,
-                        path=raw_file,
+                        path=mkv_file,
                         parameters=VideoParameters(
                              width=640,
                              height=360,
@@ -141,10 +141,10 @@ async def process_queue(chat_id):
 async def convert(file_path: str) -> str:
     out = path.basename(file_path)
     out = out.split(".")
-    out[-1] = "raw"
+    out[-1] = "mkv"
     out = ".".join(out)
     out = path.basename(out)
-    out_dir = "raw_files"
+    out_dir = "mkv_files"
     out = path.join(out_dir, out)
     os.makedirs(out_dir, exist_ok=True)
 
