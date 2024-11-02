@@ -19,7 +19,7 @@ speedtest-cli
 youtube-search
 pymongo[srv]
 motor
-numpy
+numpy==2.1.2
 pillow==9.5.0
 httpx
 ntgcalls>=1.0.0dev24
