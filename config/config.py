@@ -14,7 +14,7 @@ def is_enabled(value, default):
     else:
         return default
 
-API_ID =  int(getenv("API_ID", "14688437"))
-API_HASH = getenv("API_HASH", "5310285db722d1dceb128b88772d53a6")
-STRING = getenv("STRING", "BQCNjfMAE_sZ0Y_B8jtlKS7f2faXZXffSlgZDv6d044JWkfAirHDd9n9tsWr4ETbzNjutZHz_sNMyKCRk2l5RQGoGF3Bzw7lB_OtacWRQQfZ2M9dgSXmfzbsiSr7ECQzogDxGDOrLKb5HzvfhI7ZvtFt3LMpLqQDR6MM-s0DUqbqCqXOaXVyoSgCzGmVE1VBTFGJBg5e8Yd8l9VkkpIhFtE7_bIxD48gc9BGNWdv7z9Sdzf60Pl8oGhY3FqPYfwb2GWEUS96ZXT0qEriVHY418kFLqvEzZ9SdaubDkNKw7js-k-7gQoBpYePNYBers1VUmEo451RqJIXH8s7uTg1UdUlCgFyPgAAAAFaU4PhAA")
-OWNER_ID = int(os.environ.get("OWNER_ID", "5857041668"))
+API_ID =  int(getenv("API_ID", "11163590"))
+API_HASH = getenv("API_HASH", "fa76f31e5f7a64d906d4978dd0e5d3b3")
+STRING = getenv("STRING", "BQDgILUAbQN9pexKBryrY_JQWFRhW2iIvLdUFEhx-aGRXkPj3WuRJ3UchPySJorQq4sibiuYk6fv_U_AGIe1YDb7j3_cZ6hBY0v-VvStWdjCCv1Jk2JKqWIb5eDRSvkOthhj5RYnnLYdJfMORAIt8eHWjGYwLHDvGU4tQ50UdCwQ8INvqIGGhFoCJv48E68vg3X5kdMWTkQYaxKLqu8_EnA69vs8wn5RiLUjIScTub-zitTB2HEwjPwLBrAgkbNNrVnamYEWA2MfZsj0hyM-pe8VxOf90BAynis8CySqX-ADoTwzuPg6FNLaGTmfO9RLISjicilvU9xsoaB02azuL2uw-S0KIgAAAAFWwDFOAA")
+OWNER_ID = int(os.environ.get("OWNER_ID", "7398382204"))
